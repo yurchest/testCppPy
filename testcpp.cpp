@@ -1,14 +1,22 @@
 #include "func.cpp"
-#include <math.h>
+#include <iostream>
 
-double func_cpp(long x, long y);
+
+
+
+
+float func_cpp(float, unsigned long long &);
+
+using namespace std;
 
 int main(){
 
-    long x = pow(32432, 32);
-    long y = pow(23423, 32);
+    float array[] {1.0, 2.0, 3.0, 4.0, 5.0};
+//    printf("%f\n\n", array[2]);
+//    printf("%d\n\n", sizeof(array) / sizeof(float));
+    unsigned long long len = 5;
+    printf("%f\n\n", func_cpp(array, len));
+    printf("%x\n\n", &len);
 
-    double result  = func_cpp(x, y);
-    printf("%d", result);
-
+    return 0;
 }

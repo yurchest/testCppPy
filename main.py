@@ -1,59 +1,54 @@
-import ctypes
+
 from ctypes import *
-from datetime import datetime
-import math
-import os
-import numpy
+
+import numpy as np
 import random
+import time
 
-import statistics
-
-
-def func(x):
-    sum = 0
-    for t in x:
-        sum = sum + t
-    return sum / len(x)
+import os
 
 
-def test_cpp(x):
-    os.system("g++ -fPIC -shared -o func.so func.cpp")
-    path = os.path.join(os.getcwd(), 'func.so')
-    cpp = CDLL(path)
-    cpp.func_cpp.restype = c_double
-    cpp.func_cpp.argtypes = [POINTER(c_double * len(x)), c_size_t]
-    x = (c_double * len(x))(*x)
-    start_time = datetime.now()
-
-    # cast(x, POINTER(c_double))
-    resultcpp = cpp.func_cpp(byref(x), len(x))
-    print('CPP DLL TIME :  ')
-    print("Result = ", resultcpp)
-    print(datetime.now() - start_time)
-
-
-def run_py(x):
-    start_time = datetime.now()
-    result = func(x)
-    print('PYTHON TIME :  ')
-    print("Result = ", result)
-    print(datetime.now() - start_time)
-    print('\n')
+def func_native_python(array: list) -> float:
+    res = 0
+    for x in array:
+        res += x
+    return res/len(array)
 
 
 if __name__ == "__main__":
-    x = numpy.array([(random.random() + random.random()) for i in range(199999990)])
-    x = x.tolist()
-    print('Начало теста \n')
 
-    run_py(x)
-    test_cpp(x)
+    ## Create test Array
 
-    # print(f"In Python: int: {x}  return {result}")
+    array = [random.random() for i in range(1000000)]
 
-## cpp - 2.45
-## python 3.8
+    ## Native Python
 
+    print('\n')
+    t0 = time.time()
+    result_netive_py = func_native_python(array)
+    t1 = time.time()
+    print(f"Native Python Func\nTime = {(t1 - t0) * 1000} ms \nResult = {result_netive_py}")
 
-# cpp 0:00:00.038000
-## python 0:00:00.019000
+    ##  Numpy
+    print('\n')
+    array_np = np.array(array)
+    t0 = time.time()
+    result_numpy = np.mean(array_np)
+    t1 = time.time()
+    print(f"Numpy Func\nTime = {(t1 - t0) * 1000} ms \nResult = {result_numpy}")
+
+    ## C++ dll import
+
+    print('\n')
+    path = os.path.join(os.getcwd(), 'lib.so')
+    cpp = CDLL(path, winmode=1)
+    # cpp.func_cpp.argtypes = [POINTER(c_float * len(array)), c_ulonglong]
+
+    array_x = (c_float * len(array))(*array)
+
+    # print(array_x, hex(id(array_x)), byref(array_x), pointer(array_x))
+
+    t0 = time.time()
+    result_cpp_import = cpp.func_cpp(array_x, len(array))
+    t1 = time.time()
+    print(f"CPP import Func\nTime = {(t1 - t0) * 1000} ms \nResult = {result_cpp_import}")
